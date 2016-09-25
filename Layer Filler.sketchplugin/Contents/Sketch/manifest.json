@@ -1,0 +1,25 @@
+{
+  "author" : "",
+  "commands" : [
+    {
+      "script" : "script.cocoascript",
+      "name" : "Layer Filler",
+      "shortcut": "ctrl shift f",
+      "handlers" : {
+        "run" : "onRun",
+      },
+      "identifier" : "com.bohemiancoding.sketch.runscriptidentifier"
+    }
+  ],
+  "menu" : {
+    "items" : [
+      "com.bohemiancoding.sketch.runscriptidentifier"
+    ],
+    "title" : "Layer Filler"
+  },
+  "identifier" : "com.example.sketch.79149655-da44-4e69-bad8-c464a6dae6ca",
+  "version" : "1.0",
+  "description" : "",
+  "authorEmail" : "",
+  "name" : "Layer Filler"
+}

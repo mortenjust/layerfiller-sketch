@@ -1,0 +1,154 @@
+var onRun = function(context) {
+  doc = context.document
+var directoryURL = [[[doc fileURL] path] stringByDeletingLastPathComponent];
+var fileName = [[[[doc fileURL] path] lastPathComponent] stringByDeletingPathExtension];
+var artboardData = getSelectedArtboardsAsImages()
+var images = artboardData.selectedArtboardsImages
+var filePaths = artboardData.tempFilePaths
+var kPluginDomain = "com.mortenjust.sketch.layerfiller"
+
+if(images.length == 0){
+    tellUserToSelectArtBoards()
+} else {
+    var partialLabelName = askUserForPartialLayerName(images.length)
+
+    if(partialLabelName==null){
+        log("no fill me layers, it was "+partialLabelName)
+    } else {
+        log("GO FOR IT, it was "+partialLabelName)
+        var fillMeLayers = getAllFillMeLayers(partialLabelName)
+        fillInLayers(fillMeLayers, images)
+        deleteAllTempFiles(filePaths)
+    }
+}
+
+
+// ----------------- /* 
+
+function tellUserToSelectArtBoards(){
+    var alert = [COSAlertWindow new]; 
+    [alert setMessageText:"No artboards selected"];
+    [alert setInformativeText:"Select one or more artboards by clicking their names"];
+    [alert runModal]
+}
+
+function askUserForPartialLayerName(imageCount){
+	var presets = {
+		defaultPartialLayerName: "fill me",
+	}
+	var userDefaults = initDefaults(kPluginDomain, presets)
+
+    var alert = [COSAlertWindow new]; 
+    [alert setMessageText:"Fill layers"];
+    [alert setInformativeText:""+imageCount+" images selected"];
+    [alert addTextLabelWithValue:"Fill only layers whose names include this name:"];
+    [alert addTextFieldWithValue:userDefaults.defaultPartialLayerName];
+    [alert addButtonWithTitle:"Fill"]
+    [alert addButtonWithTitle:"Cancel"]
+    var response = [alert runModal];
+    var result = [[alert viewAtIndex:1] stringValue]
+    log("response: "+response)
+
+    if (String(response) == "1000"){
+        userDefaults.defaultPartialLayerName = result
+        saveDefaults(userDefaults)
+        return result
+    } else {
+        return null
+    }
+}
+
+function fillInLayers(fillMeLayers, images){
+for(i in fillMeLayers){
+    var fillMeLayer = fillMeLayers[i]
+    var thisImage = images[i % images.length]
+    fillLayerWithImage(images[i % images.length], fillMeLayer)
+   // deleteTempFile(filePaths[i])
+}
+}
+
+function deleteAllTempFiles(filePaths){
+    for(i in filePaths){
+        deleteTempFile(filePaths[i])
+    }
+}
+
+function getSelectedArtboardsAsImages(){
+var selectedArtboards = []
+var tempFilePaths = []
+for (var i=0; i<[[doc currentPage] artboards].count(); i++) 
+{
+	var artboard = [[doc currentPage] artboards][i];
+	if ([artboard isSelected]){
+		var filePath = directoryURL + "/" + fileName +"_tmp_fill_me_" + i + ".png";
+		[doc saveArtboardOrSlice:artboard toFile:filePath];
+		var image = [[NSImage alloc] initByReferencingFile:filePath];
+
+        selectedArtboards.push(image)
+        tempFilePaths.push(filePath)
+    }
+}
+    return { selectedArtboardsImages: selectedArtboards, tempFilePaths: tempFilePaths } 
+}
+
+function getAllFillMeLayers(partialLabelName){
+    var fillMeLayers = []
+	for (var i = 0; i < doc.pages().count(); i++) {
+		var page = doc.pages().objectAtIndex(i),
+	    	layers = page.children();
+
+	    // Loop through all children of the page
+		for (var j = 0; j < layers.count(); j++) {
+
+			// get the current layer
+			var layer = layers.objectAtIndex(j);
+
+            if(layer.name().includes(partialLabelName)){
+                fillMeLayers.push(layer)
+                }
+        }
+    }
+    return fillMeLayers
+}
+
+
+function fillLayerWithImage(image, layer){
+      var fill = layer.style().fills().firstObject();
+      fill.setFillType(4); 
+      fill.setImage(MSImageData.alloc().initWithImage_convertColorSpace(image, false));
+      layer.style().fills().firstObject().setPatternFillType(1);
+}
+
+function deleteTempFile(filePath){
+        if ([[NSFileManager defaultManager] isDeletableFileAtPath:filePath]) {
+            BOOL success = [[NSFileManager defaultManager] removeItemAtPath:filePath error:nil];
+         	if (!success) {
+           		print("Error removing file at path" + filePath);
+         	}
+		}   
+}
+
+function initDefaults(pluginDomain, initialValues) {
+	var defaults = [[NSUserDefaults standardUserDefaults] objectForKey:kPluginDomain]
+	var defaultValues = {}
+    var dVal;
+
+    for (var key in defaults) {
+    	defaultValues[key] = defaults[key]
+	}
+
+	for (var key in initialValues) {
+		dVal = defaultValues[key]
+		if (dVal == nil) defaultValues[key] = initialValues[key]
+	}
+
+	return defaultValues
+}
+
+function saveDefaults(newValues) {
+	if (kPluginDomain) {
+		var defaults = [NSUserDefaults standardUserDefaults]
+		[defaults setObject: newValues forKey: kPluginDomain];
+	}
+}
+};
