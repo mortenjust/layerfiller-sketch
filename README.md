@@ -2,7 +2,7 @@
 Quickly add a bunch of different designs to a bunch of different device frames
 
 # Install
-1. Download this repository as a ZIP file
+1. Download <a href="https://github.com/mortenjust/layerfiller-sketch/archive/master.zip">this repository</a>
 2. unzip it
 3. double click the sketch plugin file.
 
