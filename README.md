@@ -9,7 +9,7 @@ Quickly add a bunch of different designs to a bunch of different device frames
 # Use
 1. Create one or more artboards
 2. Create one or moe layers you want to be filled with your Artboards
-3. Give them all the same name (it's okay if they also contain "Copy")
+3. Give them all the same name (it's okay if they also contain "Copy" or e.g. "number 3")
 4. Select the artboard(s)
 5. Press `shift-control-f` (for Fill)
 
